@@ -27,6 +27,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private AudioClip[] m_FootstepSounds;    // an array of footstep sounds that will be randomly selected from.
         [SerializeField] private AudioClip m_JumpSound;           // the sound played when character leaves the ground.
         [SerializeField] private AudioClip m_LandSound;           // the sound played when character touches back on ground.
+        [SerializeField] private AudioClip m_WindSound;
+        [SerializeField] private AudioClip m_HeartBeat;
+        [SerializeField] private AudioClip m_parachute;
 
         private Camera m_Camera;
         private bool m_Jump;
@@ -46,6 +49,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private Boolean check = false;
         private Boolean check2 = false;
         private Boolean gameover = false;
+        private Boolean windplaying = false;
+        private Boolean heartplaying = false;
+        private Boolean chutesound = false;
 
         // Use this for initialization
         private void Start()
@@ -60,14 +66,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_Jumping = false;
             m_AudioSource = GetComponent<AudioSource>();
 			m_MouseLook.Init(transform , m_Camera.transform);
+
         }
 
 
         // Update is called once per frame
         private void Update()
         {
-            
-            if (onledge() && !parachute && m_CharacterController.isGrounded)
+            if(!onledge() && m_CharacterController.isGrounded)
+            {
+                m_GravityMultiplier = 2;
+            }
+            if (!onledge() && !windplaying)
+            {
+                playwind();
+            }
+            if (!onledge() && !parachute && m_CharacterController.isGrounded)
             {
                 gameover = true;
             }
@@ -104,7 +118,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_PreviouslyGrounded = m_CharacterController.isGrounded;
         }
 
-        private Boolean onledge()
+        Boolean onledge()
         {
             if (m_CharacterController.transform.position.z < GameObject.Find("Cube").transform.position.z - 2 - GameObject.Find("Cube").transform.localScale.z / 2)
             {
@@ -170,6 +184,20 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             m_AudioSource.clip = m_JumpSound;
             m_AudioSource.Play();
+        }
+
+        private void playwind()
+        {
+            m_AudioSource.clip = m_WindSound;
+            m_AudioSource.Play();
+            windplaying = true;
+        }
+
+        private void playchute()
+        {
+            m_AudioSource.clip = m_parachute;
+            m_AudioSource.Play();
+            chutesound = true;
         }
 
 
@@ -281,6 +309,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 parachute = true;
 
                 check = true;
+
+                playchute();
+
             }
 
 
