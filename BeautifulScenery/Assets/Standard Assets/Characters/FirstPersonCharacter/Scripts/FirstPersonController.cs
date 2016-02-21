@@ -44,6 +44,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private Boolean parachute = false;
         private Boolean check = false;
+        private Boolean check2 = false;
+        private Boolean gameover = false;
 
         // Use this for initialization
         private void Start()
@@ -64,24 +66,35 @@ namespace UnityStandardAssets.Characters.FirstPerson
         // Update is called once per frame
         private void Update()
         {
+            
+            if (onledge() && !parachute && m_CharacterController.isGrounded)
+            {
+                gameover = true;
+            }
+            if (gameover)
+            {
+                Application.LoadLevel(0);
+            }
             RotateView();
             // the jump state needs to read here to make sure it is not missed
             if (!m_Jump)
             {
-                m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
+                    m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
             }
 
-            if ((!m_PreviouslyGrounded && m_CharacterController.isGrounded) || check)
+            if (check)
+            {
+                //PlayLandingSound();
+                m_MoveDir.y = 0f;
+                check = false;
+            }
+
+            if ((!m_PreviouslyGrounded && m_CharacterController.isGrounded))
             {
                 StartCoroutine(m_JumpBob.DoBobCycle());
                 PlayLandingSound();
                 m_MoveDir.y = 0f;
                 m_Jumping = false;
-
-                if (check)
-                {
-                    check = false;
-                }
             }
             if (!m_CharacterController.isGrounded && !m_Jumping && m_PreviouslyGrounded)
             {
@@ -89,6 +102,16 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             m_PreviouslyGrounded = m_CharacterController.isGrounded;
+        }
+
+        private Boolean onledge()
+        {
+            if (m_CharacterController.transform.position.z < GameObject.Find("Cube").transform.position.z - 2 - GameObject.Find("Cube").transform.localScale.z / 2)
+            {
+                Debug.Log("number: " + (GameObject.Find("Cube").transform.position.z - 2 - GameObject.Find("Cube").transform.localScale.z / 2));
+                return false;
+            }
+            return true;
         }
 
 
@@ -212,6 +235,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void GetInput(out float speed)
         {
+
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                Debug.Log("im out!!\n");
+                Application.LoadLevel(0);
+            }
+
             // Read input
             float horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
             float vertical = CrossPlatformInputManager.GetAxis("Vertical");
@@ -246,7 +276,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 Debug.Log("here!!!!!!!!!!!!!!!!!!!!!!!\n");
                 Debug.Log("gravity first: " + m_GravityMultiplier + "\n");
-                m_GravityMultiplier = 0.4f;
+                m_GravityMultiplier = 0.7f;
                 Debug.Log("gravity after: " + m_GravityMultiplier + "\n");
                 parachute = true;
 
